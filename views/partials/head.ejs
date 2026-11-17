@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> · Hospital Appointment Confirmation</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">🏥 OPD Confirm</div>
+    <nav>
+      <a href="/" class="<%= path === '/' ? 'active' : '' %>">🏠 Home</a>
+      <a href="/appointments" class="<%= path.startsWith('/appointments') ? 'active' : '' %>">📅 Appointment List</a>
+      <a href="/follow-ups" class="<%= path === '/follow-ups' ? 'active' : '' %>">👤 Follow-up</a>
+    </nav>
+    <form method="post" action="/logout" class="logout">
+      <button type="submit">↪ Logout</button>
+    </form>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <span>Hospital Appointment Confirmation</span>
+      <span class="who"><%= user.name %> <small>(<%= user.role %>)</small></span>
+    </header>
+    <main class="content">
+      <h1><%= title %></h1>
