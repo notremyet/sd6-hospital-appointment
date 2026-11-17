@@ -1,0 +1,28 @@
+{
+  "name": "line-appointment-bot",
+  "version": "1.0.0",
+  "description": "LINE chatbot for outpatient appointment confirmation (SD6-2026)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env index.js",
+    "dev": "node --watch --env-file=.env index.js",
+    "remind": "node --env-file=.env scripts/send-reminder.js",
+    "jobs": "node --env-file=.env scripts/run-jobs.js",
+    "richmenu": "node --env-file=.env scripts/setup-richmenu.js",
+    "create-staff": "node --env-file=.env scripts/create-staff.js"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22.9"
+  },
+  "dependencies": {
+    "@line/bot-sdk": "^11.4.0",
+    "bcryptjs": "^3.0.3",
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "mysql2": "^3.24.6",
+    "node-cron": "^4.6.0"
+  }
+}
