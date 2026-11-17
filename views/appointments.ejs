@@ -1,0 +1,58 @@
+<%- include('partials/head', { title: 'Appointment List' }) %>
+
+<form class="filters" method="get" action="/appointments">
+  <input type="search" name="q" value="<%= filters.q %>" placeholder="Search patient name or HN">
+  <label>Appointment Date
+    <select name="date" onchange="this.form.submit()">
+      <% [['upcoming','Upcoming'],['today','Today'],['tomorrow','Tomorrow'],['week','Next 7 days'],['past','Past'],['all','All dates']].forEach(([v, l]) => { %>
+        <option value="<%= v %>" <%= filters.date === v ? 'selected' : '' %>><%= l %></option>
+      <% }) %>
+    </select>
+  </label>
+  <label>Status
+    <select name="status" onchange="this.form.submit()">
+      <% [['all','All status'],['Pending','Pending'],['Confirmed','Confirmed'],['Declined','Declined'],['overdue','No response (overdue)']].forEach(([v, l]) => { %>
+        <option value="<%= v %>" <%= filters.status === v ? 'selected' : '' %>><%= l %></option>
+      <% }) %>
+    </select>
+  </label>
+  <button class="btn" type="submit">Search</button>
+</form>
+
+<div class="card table-card">
+  <table>
+    <thead>
+      <tr><th>No.</th><th>Patient Name</th><th>HN</th><th>Appointment Date</th><th>Time</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <% if (rows.length === 0) { %>
+        <tr><td colspan="6" class="empty">No appointments found</td></tr>
+      <% } %>
+      <% rows.forEach((r, i) => { %>
+        <tr class="clickable" onclick="location.href='/appointments/<%= r.appointment_id %>'">
+          <td><%= (page - 1) * pageSize + i + 1 %></td>
+          <td><a href="/appointments/<%= r.appointment_id %>"><%= r.patient_name %></a></td>
+          <td><%= r.hn %></td>
+          <td><%= fmtDate(r.appointment_date) %></td>
+          <td><%= fmtTime(r.appointment_time) %></td>
+          <td>
+            <%- include('partials/status', { status: r.confirmation_status }) %>
+            <% if (r.reschedule_count > 0) { %><span class="tag">Rescheduled ×<%= r.reschedule_count %></span><% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<div class="pager">
+  <span class="muted">Showing <%= count === 0 ? 0 : (page - 1) * pageSize + 1 %>–<%= Math.min(page * pageSize, count) %> of <%= count %> appointments</span>
+  <span>
+    <% for (let p = 1; p <= totalPages; p++) {
+         const qs = new URLSearchParams({ q: filters.q, date: filters.date, status: filters.status, page: p }); %>
+      <a href="/appointments?<%= qs %>" class="<%= p === page ? 'current' : '' %>"><%= p %></a>
+    <% } %>
+  </span>
+</div>
+
+<%- include('partials/foot') %>

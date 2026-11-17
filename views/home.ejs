@@ -1,0 +1,27 @@
+<%- include('partials/head', { title: 'Home' }) %>
+
+<section class="card">
+  <h2>Appointment Status <small class="muted">(upcoming)</small></h2>
+  <div class="stats">
+    <a class="stat" href="/appointments">
+      <b class="n total"><%= stats.total %></b><span>Total</span>
+    </a>
+    <a class="stat" href="/appointments?status=Confirmed">
+      <b class="n confirmed"><%= stats.confirmed %></b><span><i class="dot confirmed"></i>Confirmed</span>
+    </a>
+    <a class="stat" href="/appointments?status=Pending">
+      <b class="n pending"><%= stats.pending %></b><span><i class="dot pending"></i>Pending</span>
+    </a>
+    <a class="stat" href="/appointments?status=Declined">
+      <b class="n declined"><%= stats.declined %></b><span><i class="dot declined"></i>Declined</span>
+    </a>
+  </div>
+</section>
+
+<a class="card followup-card" href="/follow-ups">
+  <h2>Follow-up Required</h2>
+  <p><b class="big"><%= stats.followUps %></b> patients</p>
+  <p class="muted">Not responded before the confirmation deadline</p>
+</a>
+
+<%- include('partials/foot') %>

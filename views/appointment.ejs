@@ -1,0 +1,130 @@
+<%- include('partials/head', { title: 'Appointment Status' }) %>
+
+<% if (saved) { %><div class="alert success">✅ Status saved</div><% } %>
+
+<section class="card">
+  <h2>Patient Information</h2>
+  <div class="grid2">
+    <dl>
+      <dt>Name</dt><dd><b><%= appt.patient_name %></b></dd>
+      <dt>HN</dt><dd><%= appt.hn %></dd>
+      <dt>LINE</dt><dd><%= appt.has_line ? 'Registered' : 'Not registered' %></dd>
+      <dt>PDPA Consent</dt>
+      <dd><%= consent ? `Given ${fmtDateTime(consent.created_at)} (v${consent.version})` : '-' %></dd>
+    </dl>
+    <dl>
+      <dt>Appointment Date</dt><dd><%= fmtDate(appt.appointment_date) %></dd>
+      <dt>Time</dt><dd><%= fmtTime(appt.appointment_time) %></dd>
+      <dt>Department</dt><dd><%= appt.department_name %></dd>
+      <dt>Doctor</dt><dd><%= appt.doctor_name %></dd>
+      <% if (appt.reschedule_count > 0) { %>
+        <dt>Rescheduled</dt><dd><%= appt.reschedule_count %> time(s) by patient</dd>
+      <% } %>
+    </dl>
+  </div>
+</section>
+
+<div class="grid2">
+  <section class="card">
+    <h2>Confirmation Status</h2>
+    <dl>
+      <dt>Current Status</dt><dd><%- include('partials/status', { status: appt.confirmation_status }) %></dd>
+      <dt>Reminder Sent</dt><dd><%= fmtDateTime(appt.notification_sent_at) %></dd>
+      <dt>Response Date &amp; Time</dt><dd><%= responses[0] ? fmtDateTime(responses[0].response_time) : '-' %></dd>
+      <dt>Confirmation Deadline</dt><dd><%= fmtDateTime(appt.response_deadline) %></dd>
+      <% if (responses[0] && responses[0].decline_reason) { %>
+        <dt>Decline Reason</dt><dd><%= responses[0].decline_reason %></dd>
+      <% } %>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Follow-up Information</h2>
+    <dl>
+      <dt>Phone Number</dt>
+      <dd>
+        <%= appt.phone || '-' %>
+        <% if (appt.phone) { %>
+          <button type="button" class="btn small" data-phone="<%= appt.phone %>" onclick="navigator.clipboard.writeText(this.dataset.phone); this.textContent='Copied'">Copy</button>
+        <% } %>
+      </dd>
+      <% if (followUp) { %>
+        <dt>Follow-up Status</dt><dd><%= followUp.follow_up_status %></dd>
+        <dt>Last Contact</dt><dd><%= fmtDateTime(followUp.follow_up_time) %></dd>
+        <% if (followUp.follow_up_outcome) { %><dt>Note</dt><dd><%= followUp.follow_up_outcome %></dd><% } %>
+      <% } %>
+    </dl>
+
+    <form method="post" action="/appointments/<%= appt.appointment_id %>/status" class="update-form">
+      <label>Update Status
+        <select name="status">
+          <% ['Pending', 'Confirmed', 'Declined'].forEach((s) => { %>
+            <option value="<%= s %>" <%= appt.confirmation_status === s ? 'selected' : '' %>><%= s %></option>
+          <% }) %>
+        </select>
+      </label>
+      <% if (followUp && ['Open', 'Unreachable'].includes(followUp.follow_up_status)) { %>
+        <label>If still Pending, call result
+          <select name="followUpResult">
+            <option value="Open">Not called yet</option>
+            <option value="Unreachable" <%= followUp.follow_up_status === 'Unreachable' ? 'selected' : '' %>>Could not reach patient</option>
+          </select>
+        </label>
+      <% } %>
+      <label>Note <textarea name="note" rows="2" placeholder="e.g. patient will come 30 minutes late"></textarea></label>
+      <button type="submit" class="btn primary">Save</button>
+    </form>
+
+    <% if (followUp && appt.confirmation_status === 'Pending' && ['Open', 'Unreachable'].includes(followUp.follow_up_status)) { %>
+      <div class="alert info">
+        ℹ️ <%= appt.has_line
+          ? 'Patient has not responded within the deadline. Please contact the patient for follow-up.'
+          : 'Patient is not registered on LINE. Please call the patient to confirm the appointment.' %>
+      </div>
+    <% } %>
+  </section>
+</div>
+
+<section class="card">
+  <h2>Response History</h2>
+  <% if (responses.length === 0) { %>
+    <p class="muted">No responses yet</p>
+  <% } else { %>
+    <table>
+      <thead><tr><th>Date &amp; Time</th><th>Response</th><th>By</th><th>Reason</th></tr></thead>
+      <tbody>
+        <% responses.forEach((r) => { %>
+          <tr>
+            <td><%= fmtDateTime(r.response_time) %></td>
+            <td><%- include('partials/status', { status: r.response_type }) %></td>
+            <td><%= r.source === 'LINE' ? 'Patient (LINE)' : 'Staff' %></td>
+            <td><%= r.decline_reason || '-' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<% if (reschedules.length > 0) { %>
+<section class="card">
+  <h2>Reschedule History</h2>
+  <table>
+    <thead><tr><th>Changed At</th><th>From</th><th>To</th><th>By</th></tr></thead>
+    <tbody>
+      <% reschedules.forEach((r) => { %>
+        <tr>
+          <td><%= fmtDateTime(r.changed_at) %></td>
+          <td><%= fmtDate(r.old_date) %> <%= fmtTime(r.old_time) %></td>
+          <td><b><%= fmtDate(r.new_date) %> <%= fmtTime(r.new_time) %></b></td>
+          <td><%= r.source === 'LINE' ? 'Patient (LINE)' : 'Staff' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+<% } %>
+
+<p><a href="javascript:history.back()">← Back</a></p>
+
+<%- include('partials/foot') %>

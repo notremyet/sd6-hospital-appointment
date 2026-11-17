@@ -1,0 +1,39 @@
+<%- include('partials/head', { title: 'Follow-up' }) %>
+
+<form class="filters" method="get" action="/follow-ups">
+  <input type="search" name="q" value="<%= search %>" placeholder="Search patient name or HN">
+  <button class="btn" type="submit">Search</button>
+</form>
+
+<div class="card table-card">
+  <table>
+    <thead>
+      <tr><th>No.</th><th>Patient Name</th><th>HN</th><th>Phone</th><th>Appointment Date</th><th>Time</th><th>Days Left</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <% if (rows.length === 0) { %>
+        <tr><td colspan="8" class="empty">🎉 No patients need follow-up</td></tr>
+      <% } %>
+      <% rows.forEach((r, i) => { %>
+        <tr class="clickable" onclick="location.href='/appointments/<%= r.appointment_id %>'">
+          <td><%= i + 1 %></td>
+          <td><a href="/appointments/<%= r.appointment_id %>"><%= r.patient_name %></a></td>
+          <td><%= r.hn %></td>
+          <td><%= r.phone || '-' %></td>
+          <td><%= fmtDate(r.appointment_date) %></td>
+          <td><%= fmtTime(r.appointment_time) %></td>
+          <td class="<%= r.days_left <= 1 ? 'urgent' : '' %>">
+            <%= r.days_left === 0 ? 'Today' : r.days_left + (r.days_left === 1 ? ' day' : ' days') %>
+          </td>
+          <td>
+            <% if (r.no_line) { %><span class="tag">No LINE</span><% } %>
+            <% if (r.follow_up_status === 'Unreachable') { %><span class="tag warn">Unreachable</span><% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<p class="muted">Showing <%= rows.length %> patients</p>
+
+<%- include('partials/foot') %>
